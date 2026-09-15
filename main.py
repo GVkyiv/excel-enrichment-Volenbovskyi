@@ -16,6 +16,8 @@ from pathlib import Path
 
 from src.config import INPUT_DIR
 from src.pipeline import process_excel
+from src.planner import PlanError
+from src.tools.llm import MissingApiKeyError
 
 # Готові завдання з умови курсу, щоб не набирати їх щоразу руками.
 # План не задається навмисно: його щоразу будує модель, і саме це є
@@ -62,15 +64,22 @@ def main(argv: list[str] | None = None) -> int:
         file_path, task = Path(args.file), args.task
         plan_path = Path(args.plan) if args.plan else None
 
-    process_excel(
-        file_path=file_path,
-        task_description=task,
-        overwrite=args.overwrite,
-        max_workers=args.workers,
-        road_mode=not args.no_road,
-        plan_path=plan_path,
-        output_path=args.output,
-    )
+    try:
+        process_excel(
+            file_path=file_path,
+            task_description=task,
+            overwrite=args.overwrite,
+            max_workers=args.workers,
+            road_mode=not args.no_road,
+            plan_path=plan_path,
+            output_path=args.output,
+        )
+    except (MissingApiKeyError, PlanError, FileNotFoundError) as error:
+        # Очікувані причини зупинки показуємо людині текстом, а не
+        # трасуванням стека: це повідомлення для користувача, не для
+        # налагодження.
+        print(f"\nЗупинка: {error}", file=sys.stderr)
+        return 1
     return 0
 
 

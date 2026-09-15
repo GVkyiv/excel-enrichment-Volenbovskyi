@@ -63,6 +63,7 @@ class HttpClient:
         params: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         limiter: RateLimiter | None = None,
+        timeout: int = HTTP_TIMEOUT,
     ) -> requests.Response:
         """GET із трьома спробами і паузами 1, 2, 4 секунди."""
         last_error: Exception | None = None
@@ -73,7 +74,7 @@ class HttpClient:
                 with self._lock:
                     self.calls += 1
                 response = self._session.get(
-                    url, params=params, headers=headers, timeout=HTTP_TIMEOUT
+                    url, params=params, headers=headers, timeout=timeout
                 )
                 if response.status_code == 429:
                     raise requests.HTTPError("429 Too Many Requests")

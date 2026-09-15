@@ -4,17 +4,17 @@
   "unit": null,
   "tool": "web_search_extract",
   "input_columns": {
-    "mountain": "Mountain",
+    "entity": "Mountain",
     "country": "Country"
   },
   "wikidata_property": null,
-  "wikidata_type": null,
-  "search_query_template": "first successful ascent date of {Mountain} in {Country}",
+  "wikidata_type": "Q8502",
+  "search_query_template": "first successful ascent date of {Mountain} in {Country} first ascent DD.MM.YYYY",
   "bounds": {
     "min_value": null,
     "max_value": null
   },
   "ambiguous_interpretations": [],
   "extra_columns": {},
-  "reasoning": "Дату першого успішного сходження найнадійніше знаходити через вебпошук у профільних джерелах, оскільки це подія, для якої немає однозначної універсальної властивості Wikidata. Результат слід нормалізувати до формату ДД.ММ.РРРР."
+  "reasoning": "Дату першого успішного сходження найнадійніше знаходити через вебпошук у джерелах про конкретну гору, оскільки це не універсальна властивість Wikidata для всіх гір. Пошуковий шаблон уточнює гору, країну та потрібний формат дати."
 }

@@ -12,7 +12,6 @@
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any, Literal, TypedDict
 
 from langgraph.checkpoint.memory import MemorySaver
@@ -113,7 +112,11 @@ def build_graph(context: ToolContext):
         """Складає підсумок по рядку для аркуша enrichment_log."""
         outcome = state.get("outcome", {})
         status = _final_status(state)
-        value = state.get("validated_value") if status in ("ok", "ambiguous") else None
+        value = (
+            state.get("validated_value")
+            if _keeps_value(status, outcome.get("confidence_level", 0))
+            else None
+        )
         result = RowResult(
             row_index=state["row_index"],
             target_column=context.plan.target_column,
@@ -131,8 +134,13 @@ def build_graph(context: ToolContext):
         return {"result": result.model_dump()}
 
     def route(state: RowState) -> Literal["retry", "done"]:
-        """Невдача це привід спробувати інший інструмент, поки є спроби."""
-        if state.get("status") in ("ok", "ambiguous"):
+        """Невдача це привід спробувати інший інструмент, поки є спроби.
+
+        Статус «непідтверджено» сюди не належить: значення вже знайдено, а
+        контрольне джерело вже опитано, тож інший інструмент нічого не
+        додасть, зате може затерти знайдене.
+        """
+        if state.get("status") in ("ok", "ambiguous", "unconfirmed"):
             return "done"
         if state.get("attempt", 0) >= MAX_TOOL_ATTEMPTS:
             return "done"
@@ -153,6 +161,19 @@ def build_graph(context: ToolContext):
     return builder.compile(checkpointer=MemorySaver())
 
 
+def _keeps_value(status: str, level: int) -> bool:
+    """Чи потрапляє значення у файл.
+
+    Підтверджене і спірне значення записуються, спірне ще й з поміткою в
+    логу. Непідтверджене записується лише тоді, коли в нього є зовнішнє
+    джерело (рівень 2). Відповідь з пам'яті моделі без підтвердження
+    (рівень 3) у файл не потрапляє ніколи.
+    """
+    if status in ("ok", "ambiguous"):
+        return True
+    return status == "unconfirmed" and level == 2
+
+
 def _final_status(state: RowState) -> str:
     """Підсумковий статус рядка.
 
@@ -160,8 +181,10 @@ def _final_status(state: RowState) -> str:
     «поза межами» пояснює більше, ніж «не знайдено» від наступної спроби.
     """
     status = state.get("status", "not_found")
-    if status in ("ok", "ambiguous"):
+    if status != "not_found":
         return status
+    # Тільки коли остання спроба закінчилась беззмістовним «не знайдено»,
+    # має сенс показати причину попередньої: вона пояснює більше.
     history = state.get("statuses", [])
     for informative in ("network_error", "api_key_error", "out_of_bounds", "unconfirmed"):
         if informative in history:
@@ -198,9 +221,11 @@ def _cross_check(
     check_tool = "llm_knowledge" if level == 2 else "web_search_extract"
     control = run_tool(check_tool, row, context)
     if not control.found or control.value is None:
-        if level >= 3:
-            return "unconfirmed", f"{base_message}; підтвердження не знайдено"
-        return "ok", f"{base_message}; контрольне джерело мовчить"
+        # Мовчання контрольного джерела не робить значення підтвердженим.
+        # Для рівня 2 значення лишається у файлі, бо в нього є зовнішнє
+        # джерело з посиланням, але статус чесно каже, що підтвердження
+        # немає. Для рівня 3 (пам'ять моделі) значення не приймається.
+        return "unconfirmed", f"{base_message}; контрольне джерело мовчить"
 
     try:
         control_value = validate(control.value, context.plan, None)

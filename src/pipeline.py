@@ -19,6 +19,7 @@ from .cache import Cache
 from .config import MAX_WORKERS, OUTPUT_DIR, PLANS_DIR
 from .excel_io import ExcelTable, write_enriched
 from .graph import build_graph
+from .http_client import http_client
 from .models import EnrichmentPlan, EnrichmentReport, RowResult
 from .planner import build_plan, load_plan, save_plan, validate_plan
 from .tools import ToolContext
@@ -56,6 +57,10 @@ def process_excel(
     Повертає звіт із лічильниками і списком результатів по рядках.
     """
     started = time.monotonic()
+    # Клієнт мережі спільний на процес, тому в звіт іде приріст за цей
+    # прогін, а не накопичений підсумок: інакше другий запуск у тому
+    # самому ноутбуці показував би чужі запити.
+    network_start = http_client.calls
     file_path = Path(file_path)
     table = ExcelTable(file_path)
     cache = Cache()
@@ -120,7 +125,7 @@ def process_excel(
     )
     write_enriched(file_path, output, report, plan.target_column, used_extras)
 
-    _finalize(report, output, cache, llm, started)
+    _finalize(report, output, cache, llm, started, network_start)
     cache.close()
     for line in report.summary_lines():
         print(line)
@@ -242,10 +247,9 @@ def _finalize(
     cache: Cache,
     llm: LLMClient | None,
     started: float,
+    network_start: int,
 ) -> None:
     """Заповнює лічильники звіту."""
-    from .http_client import http_client
-
     report.output_path = str(output)
     report.rows_total = len(report.rows)
     report.filled = sum(1 for row in report.rows if row.value is not None)
@@ -262,6 +266,6 @@ def _finalize(
     report.llm_input_tokens = llm.input_tokens if llm else 0
     report.llm_output_tokens = llm.output_tokens if llm else 0
     report.cost_usd = llm.cost_usd if llm else 0.0
-    report.network_calls = http_client.calls
+    report.network_calls = http_client.calls - network_start
     report.cache_hits = cache.hits
     report.duration_s = time.monotonic() - started

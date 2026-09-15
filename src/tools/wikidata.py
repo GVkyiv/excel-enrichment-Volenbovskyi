@@ -23,7 +23,12 @@ import re
 from typing import Any
 
 from ..cache import Cache
-from ..config import TYPE_HINT_MIN_SHARE, WIKIDATA_BATCH_SIZE, WIKIDATA_SPARQL_URL
+from ..config import (
+    HTTP_TIMEOUT_BATCH,
+    TYPE_HINT_MIN_SHARE,
+    WIKIDATA_BATCH_SIZE,
+    WIKIDATA_SPARQL_URL,
+)
 from ..http_client import http_client
 
 logger = logging.getLogger(__name__)
@@ -97,6 +102,7 @@ def _query_batch(
         WIKIDATA_SPARQL_URL,
         params={"query": query, "format": "json"},
         headers={"Accept": "application/sparql-results+json"},
+        timeout=HTTP_TIMEOUT_BATCH,
     )
     bindings = response.json()["results"]["bindings"]
 

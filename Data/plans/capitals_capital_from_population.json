@@ -10,10 +10,15 @@
   "wikidata_type": "Q515",
   "search_query_template": "population of {Capital_From} city",
   "bounds": {
-    "min_value": 1.0,
+    "min_value": 0.0,
     "max_value": 50000000.0
   },
-  "ambiguous_interpretations": [],
-  "extra_columns": {},
-  "reasoning": "Населення міста є структурованою властивістю у Wikidata, тому використано P1082 із типом сутності Q515 (місто). Назву міста беремо з колонки Capital_From, а межі відсікають явно нереалістичні значення."
+  "ambiguous_interpretations": [
+    "population of the city proper",
+    "population of the metropolitan area"
+  ],
+  "extra_columns": {
+    "Capital_From_population_metropolitan": "population of the metropolitan area"
+  },
+  "reasoning": "Для отримання населення міста найкраще використати структуровану властивість Wikidata P1082 із типом сутності Q515. Оскільки населення може стосуватися міста proper або агломерації, основною є чисельність міста, а метрополійне населення винесено в додаткову колонку."
 }

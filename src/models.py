@@ -7,9 +7,15 @@
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+IDENTIFIER_RE = {
+    "P": re.compile(r"\bP\d+\b"),
+    "Q": re.compile(r"\bQ\d+\b"),
+}
 
 ToolName = Literal[
     "geo_distance",
@@ -71,6 +77,24 @@ class EnrichmentPlan(BaseModel):
         description="Додаткова колонка -> трактування, яке в неї пишемо",
     )
     reasoning: str = Field(default="", description="Чому обрано саме цей шлях")
+
+    @field_validator("wikidata_property", "wikidata_type", mode="before")
+    @classmethod
+    def _clean_identifier(cls, value: object, info) -> str | None:
+        """Лишає з поля тільки ідентифікатор Wikidata.
+
+        Модель схильна дописувати пояснення прямо в значення: замість
+        «Q515» приходить «Q515 city». Такий рядок потрапляв у текст
+        SPARQL-запиту і ламав його з помилкою 400, після чого система
+        відкочувалась на повільний шлях по одному місту в секунду.
+        Тому значення, яке прийшло від моделі, у запит потрапляє лише
+        після того, як з нього витягнуто сам ідентифікатор.
+        """
+        if value is None:
+            return None
+        prefix = "P" if info.field_name == "wikidata_property" else "Q"
+        match = IDENTIFIER_RE[prefix].search(str(value))
+        return match.group() if match else None
 
 
 class RowResult(BaseModel):

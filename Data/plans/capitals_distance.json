@@ -9,16 +9,17 @@
   },
   "wikidata_property": null,
   "wikidata_type": "Q515",
-  "search_query_template": "straight-line distance between {Capital_From} and {Capital_To} in km",
+  "search_query_template": "straight-line distance in kilometers between {Capital_From} and {Capital_To}",
   "bounds": {
     "min_value": 0.0,
     "max_value": 20050.0
   },
   "ambiguous_interpretations": [
-    "road distance"
+    "пряма відстань",
+    "відстань автомобільними дорогами"
   ],
   "extra_columns": {
-    "distance_road": "road distance"
+    "distance_road": "road"
   },
-  "reasoning": "Для прямої відстані між столицями найкраще використати географічний розрахунок між двома містами. Додано окрему колонку для можливої альтернативної інтерпретації — відстані автомобільними дорогами."
+  "reasoning": "Обрано geo_distance, оскільки завдання прямо стосується прямої географічної відстані між двома столицями. Обидві вхідні колонки містять назви міст, тому для зменшення омонімії вказано тип сутності Q515."
 }
