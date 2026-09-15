@@ -140,7 +140,7 @@ def wikidata_lookup(row: dict[str, Any], context: ToolContext) -> ToolOutcome:
         # Рядок міг прийти в обхід пакетного попереднього запиту
         # (наприклад, як відкат з іншого інструмента), тоді питаємо точково.
         found = wikidata.lookup_property(
-            [label], plan.wikidata_property, context.cache
+            [label], plan.wikidata_property, context.cache, plan.wikidata_type
         )
         context.entity_values.update(found)
         payload = found.get(label)
@@ -156,20 +156,22 @@ def wikidata_lookup(row: dict[str, Any], context: ToolContext) -> ToolOutcome:
     except (TypeError, ValueError):
         value = str(raw)
     if payload.get("ambiguous"):
+        parts = [f"Назва «{label}» неоднозначна"]
         alternatives = ", ".join(
             f"{item['value']} ({item['item'].rsplit('/', 1)[-1]})"
             for item in payload.get("alternatives", [])
         )
+        if alternatives:
+            parts.append(f"інші кандидати: {alternatives}")
+        if payload.get("note"):
+            parts.append(payload["note"])
         return ToolOutcome(
             found=True,
             value=value,
             source_url=payload.get("item", ""),
             query=f"wikidata {plan.wikidata_property} / {label}",
             confidence_level=2,
-            message=(
-                f"Назва «{label}» описує кілька об'єктів, узято найвідоміший; "
-                f"інші варіанти: {alternatives}"
-            ),
+            message="; ".join(parts),
         )
 
     return ToolOutcome(

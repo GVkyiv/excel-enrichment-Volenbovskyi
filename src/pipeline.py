@@ -182,7 +182,9 @@ def _prefetch(table: ExcelTable, plan: EnrichmentPlan, context: ToolContext) -> 
             column = plan.input_columns.get(argument)
             if column:
                 labels += [str(row[column]) for row in table.rows if row.get(column)]
-        context.coordinates = wikidata.coordinates(labels, context.cache)
+        context.coordinates = wikidata.coordinates(
+            labels, context.cache, plan.wikidata_type
+        )
         logger.info(
             "Попередньо отримано координати: %s з %s унікальних назв",
             len(context.coordinates),
@@ -192,7 +194,7 @@ def _prefetch(table: ExcelTable, plan: EnrichmentPlan, context: ToolContext) -> 
         column = plan.input_columns.get("entity")
         labels = [str(row[column]) for row in table.rows if column and row.get(column)]
         context.entity_values = wikidata.lookup_property(
-            labels, plan.wikidata_property, context.cache
+            labels, plan.wikidata_property, context.cache, plan.wikidata_type
         )
         logger.info(
             "Попередньо отримано значення %s: %s з %s унікальних назв",

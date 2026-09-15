@@ -54,6 +54,10 @@ class EnrichmentPlan(BaseModel):
     wikidata_property: str | None = Field(
         default=None, description="Ідентифікатор властивості, напр. P2044"
     )
+    wikidata_type: str | None = Field(
+        default=None,
+        description="Підказка про тип сутності, напр. Q8502 гора, Q515 місто",
+    )
     search_query_template: str = Field(
         default="", description="Шаблон запиту з підстановкою {Колонка}"
     )

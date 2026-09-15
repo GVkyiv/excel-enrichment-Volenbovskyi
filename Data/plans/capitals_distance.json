@@ -8,6 +8,7 @@
     "to": "Capital_To"
   },
   "wikidata_property": null,
+  "wikidata_type": "Q515",
   "search_query_template": "straight line distance between {Capital_From} and {Capital_To} in km",
   "bounds": {
     "min_value": 1.0,

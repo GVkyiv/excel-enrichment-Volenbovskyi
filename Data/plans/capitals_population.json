@@ -7,6 +7,7 @@
     "entity": "Capital_From"
   },
   "wikidata_property": "P1082",
+  "wikidata_type": "Q515",
   "search_query_template": "population of {Capital_From} {Country_From}",
   "bounds": {
     "min_value": 1000.0,
