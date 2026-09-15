@@ -137,10 +137,12 @@ def main() -> int:
         add_comparison_sheet(target, REFERENCE / name, COLUMNS[name])
         print("готово:", target.name)
 
-    notebook = ROOT / "notebooks" / f"{SURNAME}_демонстрація.ipynb"
+    notebook_demo = ROOT / "notebooks" / f"{SURNAME}_демонстрація.ipynb"
+    notebook_standalone = ROOT / "notebooks" / f"{SURNAME}_система_та_демонстрація.ipynb"
     print(
         "\nНа платформу здаємо: обидва файли з Data/Submission, "
-        f"ноутбук {notebook.name} і архів репозиторію."
+        f"ноутбук (автономний {notebook_standalone.name} або {notebook_demo.name}) "
+        "і архів репозиторію."
     )
     return 0
 
