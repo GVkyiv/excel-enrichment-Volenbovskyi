@@ -165,9 +165,21 @@ def _resolve_plan(
             "OPENAI_API_KEY у .env або передайте plan_path із готовим планом."
         )
     plan = build_plan(llm, task_description, table.headers, table.sample())
-    target = Path(plan_path) if plan_path else PLANS_DIR / f"{file_path.stem}.json"
+    # Ім'я файлу плану включає цільову колонку: по одному файлу можуть
+    # виконуватись різні завдання, і плани не мають затирати один одного.
+    target = (
+        Path(plan_path)
+        if plan_path
+        else PLANS_DIR / f"{file_path.stem}_{_slug(plan.target_column)}.json"
+    )
     save_plan(plan, target)
     return plan
+
+
+def _slug(name: str) -> str:
+    """Безпечне ім'я файлу з назви колонки."""
+    cleaned = "".join(char if char.isalnum() else "_" for char in name.lower())
+    return "_".join(filter(None, cleaned.split("_")))
 
 
 def _prefetch(table: ExcelTable, plan: EnrichmentPlan, context: ToolContext) -> None:
@@ -247,6 +259,8 @@ def _finalize(
     )
     report.skipped = sum(1 for row in report.rows if row.status.startswith("skipped"))
     report.llm_calls = llm.calls if llm else 0
+    report.llm_input_tokens = llm.input_tokens if llm else 0
+    report.llm_output_tokens = llm.output_tokens if llm else 0
     report.cost_usd = llm.cost_usd if llm else 0.0
     report.network_calls = http_client.calls
     report.cache_hits = cache.hits

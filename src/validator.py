@@ -12,6 +12,19 @@ from datetime import date, datetime
 
 from .models import EnrichmentPlan
 
+# Одна й та сама одиниця пишеться по-різному: модель може сказати
+# «meters», джерело «м», завдання «метри». Зводимо до канонічного вигляду,
+# інакше переведення одиниць падало б на рівному місці.
+UNIT_ALIASES: dict[str, str] = {
+    "m": "m", "meter": "m", "meters": "m", "metre": "m", "metres": "m",
+    "м": "m", "метр": "m", "метри": "m", "метрів": "m",
+    "km": "km", "kilometer": "km", "kilometers": "km", "kilometre": "km",
+    "kilometres": "km", "км": "km", "кілометр": "km", "кілометри": "km",
+    "кілометрів": "km",
+    "mi": "mi", "mile": "mi", "miles": "mi", "миля": "mi", "миль": "mi",
+    "ft": "ft", "foot": "ft", "feet": "ft", "фут": "ft", "футів": "ft",
+}
+
 # Множники приведення до одиниць, які просить завдання.
 UNIT_FACTORS: dict[tuple[str, str], float] = {
     ("mi", "km"): 1.609344,
@@ -72,11 +85,17 @@ def _to_number(value: object) -> float:
     return float(match.group())
 
 
+def _normalize_unit(unit: str) -> str:
+    """Канонічна назва одиниці: «meters» і «метри» це те саме, що «m»."""
+    cleaned = unit.strip().lower().rstrip(".")
+    return UNIT_ALIASES.get(cleaned, cleaned)
+
+
 def _convert_units(number: float, source_unit: str | None, target_unit: str | None):
     if not source_unit or not target_unit:
         return number
-    source = source_unit.strip().lower()
-    target = target_unit.strip().lower()
+    source = _normalize_unit(source_unit)
+    target = _normalize_unit(target_unit)
     if source == target:
         return number
     factor = UNIT_FACTORS.get((source, target))

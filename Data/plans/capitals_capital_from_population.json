@@ -1,0 +1,19 @@
+{
+  "target_column": "Capital_From_population",
+  "value_type": "number",
+  "unit": "people",
+  "tool": "wikidata_lookup",
+  "input_columns": {
+    "entity": "Capital_From"
+  },
+  "wikidata_property": "P1082",
+  "wikidata_type": "Q515",
+  "search_query_template": "population of {Capital_From} city",
+  "bounds": {
+    "min_value": 1.0,
+    "max_value": 50000000.0
+  },
+  "ambiguous_interpretations": [],
+  "extra_columns": {},
+  "reasoning": "Для отримання населення міста обрано структуровану властивість Wikidata P1082, а тип Q515 уточнює, що йдеться саме про місто, а не країну чи адміністративний регіон."
+}

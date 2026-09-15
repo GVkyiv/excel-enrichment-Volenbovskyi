@@ -14,20 +14,21 @@ import logging
 import sys
 from pathlib import Path
 
-from src.config import INPUT_DIR, PLANS_DIR
+from src.config import INPUT_DIR
 from src.pipeline import process_excel
 
 # Готові завдання з умови курсу, щоб не набирати їх щоразу руками.
+# План не задається навмисно: його щоразу будує модель, і саме це є
+# предметом перевірки. Готовий план можна підставити прапорцем --plan,
+# коли потрібен прогін без жодного звернення до моделі.
 PRESETS = {
     "capitals": {
         "file": INPUT_DIR / "capitals.xlsx",
         "task": "знайди пряму відстань між столицями в км для колонки distance",
-        "plan": PLANS_DIR / "capitals_distance.json",
     },
     "mountains": {
         "file": INPUT_DIR / "mountains.xlsx",
         "task": "додай висоту гір у метрах до колонки height",
-        "plan": PLANS_DIR / "mountains_height.json",
     },
 }
 
@@ -54,7 +55,7 @@ def main(argv: list[str] | None = None) -> int:
         preset = PRESETS[args.preset]
         file_path = Path(args.file) if args.file else preset["file"]
         task = args.task or preset["task"]
-        plan_path = Path(args.plan) if args.plan else preset["plan"]
+        plan_path = Path(args.plan) if args.plan else None
     else:
         if not args.file or not args.task:
             parser.error("Задайте або готовий набір, або --file разом із --task")

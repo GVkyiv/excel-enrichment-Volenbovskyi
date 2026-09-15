@@ -9,17 +9,17 @@
   },
   "wikidata_property": null,
   "wikidata_type": "Q515",
-  "search_query_template": "straight line distance between {Capital_From} and {Capital_To} in km",
+  "search_query_template": "straight-line distance between {Capital_From} and {Capital_To} in km",
   "bounds": {
-    "min_value": 1.0,
-    "max_value": 20038.0
+    "min_value": 0.0,
+    "max_value": 20050.0
   },
   "ambiguous_interpretations": [
-    "straight",
-    "road"
+    "пряма відстань",
+    "відстань дорогами"
   ],
   "extra_columns": {
-    "distance_road_km": "road"
+    "distance_road": "відстань дорогами"
   },
-  "reasoning": "У завданні сказано «пряма відстань», тому основна колонка це велике коло за координатами Wikidata. Відстань дорогами додана окремою колонкою, бо поняття відстані між містами має два усталених трактування."
+  "reasoning": "Для обчислення прямої відстані між столицями найкраще використати geo_distance, передавши назви міст із колонок Capital_From і Capital_To. Оскільки відстань також може трактуватися як дорожня, її винесено в додаткову колонку distance_road."
 }

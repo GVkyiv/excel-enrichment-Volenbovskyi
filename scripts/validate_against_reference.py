@@ -16,6 +16,32 @@ from openpyxl import load_workbook
 TOLERANCE = 0.10
 
 
+def headers_of(path: Path) -> list[str]:
+    """Заголовки першого аркуша книги."""
+    workbook = load_workbook(path, data_only=True)
+    sheet = workbook.worksheets[0]
+    headers = [
+        str(cell.value).strip() if cell.value is not None else "" for cell in sheet[1]
+    ]
+    workbook.close()
+    return headers
+
+
+def detect_alt_column(result_path: Path, reference_path: Path) -> str | None:
+    """Знаходить додаткову колонку, якої немає в еталоні.
+
+    Назву цієї колонки щоразу складає модель, і вона не збігається від
+    прогону до прогону (`distance_road_km`, `road_distance`), тому
+    шукаємо її за різницею зі структурою еталону, а не за назвою.
+    """
+    extra = [
+        header
+        for header in headers_of(result_path)
+        if header and header not in headers_of(reference_path)
+    ]
+    return extra[0] if extra else None
+
+
 def read_column(path: Path, column: str) -> dict[int, object]:
     """Значення колонки за номером рядка книги."""
     workbook = load_workbook(path, data_only=True)
@@ -94,10 +120,18 @@ def main() -> int:
     parser.add_argument("column", help="Колонка для порівняння")
     parser.add_argument(
         "--alt",
-        help="Додаткова колонка з іншим трактуванням, наприклад distance_road_km",
+        nargs="?",
+        const="auto",
+        help="Додаткова колонка з іншим трактуванням. Без значення "
+        "визначається автоматично як колонка, якої немає в еталоні",
     )
     args = parser.parse_args()
-    compare(Path(args.result), Path(args.reference), args.column, args.alt)
+    result, reference = Path(args.result), Path(args.reference)
+    alt = args.alt
+    if alt == "auto":
+        alt = detect_alt_column(result, reference)
+        print(f"Додаткову колонку визначено автоматично: {alt or 'немає'}")
+    compare(result, reference, args.column, alt)
     return 0
 
 

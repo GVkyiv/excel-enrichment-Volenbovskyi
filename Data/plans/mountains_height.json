@@ -1,19 +1,19 @@
 {
   "target_column": "height",
   "value_type": "number",
-  "unit": "m",
+  "unit": "meters",
   "tool": "wikidata_lookup",
   "input_columns": {
     "entity": "Mountain"
   },
   "wikidata_property": "P2044",
   "wikidata_type": "Q8502",
-  "search_query_template": "height of {Mountain} in {Country} in meters above sea level",
+  "search_query_template": "height of {Mountain} in meters",
   "bounds": {
     "min_value": 100.0,
     "max_value": 9000.0
   },
   "ambiguous_interpretations": [],
   "extra_columns": {},
-  "reasoning": "Висота над рівнем моря однозначна і є у Wikidata властивістю P2044, тому структуроване джерело дешевше і точніше за пошук."
+  "reasoning": "Висота гори є однозначною структурованою властивістю, тому найнадійніше отримати її з Wikidata за властивістю P2044. Тип Q8502 допомагає відрізнити гору від гірського масиву чи іншої сутності з подібною назвою."
 }

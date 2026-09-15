@@ -1,0 +1,20 @@
+{
+  "target_column": "first_ascent",
+  "value_type": "date",
+  "unit": null,
+  "tool": "web_search_extract",
+  "input_columns": {
+    "entity": "Mountain",
+    "country": "Country"
+  },
+  "wikidata_property": null,
+  "wikidata_type": null,
+  "search_query_template": "first successful ascent date of {Mountain} in {Country}",
+  "bounds": {
+    "min_value": null,
+    "max_value": null
+  },
+  "ambiguous_interpretations": [],
+  "extra_columns": {},
+  "reasoning": "Для дати першого успішного сходження потрібне зіставлення конкретної гори з історичними джерелами, а в Wikidata немає гарантовано повного й однозначного поля для цієї дати. Тому обрано пошук в інтернеті з вилученням дати та приведенням її до формату ДД.ММ.РРРР."
+}

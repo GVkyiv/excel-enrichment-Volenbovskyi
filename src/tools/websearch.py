@@ -12,6 +12,7 @@ import logging
 
 from ..cache import Cache
 from ..config import TAVILY_API_KEY
+from ..http_client import http_client
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ def search(query: str, cache: Cache) -> list[dict[str, str]]:
     if cached is not None:
         return cached
 
+    http_client.count_external()
     results = _search_tavily(query) or _search_ddgs(query)
     if results is None:
         raise SearchUnavailableError(

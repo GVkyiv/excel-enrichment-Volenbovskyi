@@ -48,6 +48,15 @@ class HttpClient:
         self._lock = threading.Lock()
         self.calls = 0
 
+    def count_external(self, calls: int = 1) -> None:
+        """Облік запитів, які йдуть повз цей клієнт.
+
+        Tavily має власний SDK зі своїм HTTP-шаром, але у звіті мережеві
+        запити мають бути порахованими всі, інакше цифра обманює.
+        """
+        with self._lock:
+            self.calls += calls
+
     def get(
         self,
         url: str,

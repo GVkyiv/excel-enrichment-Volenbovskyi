@@ -104,6 +104,8 @@ class EnrichmentReport(BaseModel):
     errors: int = 0
     skipped: int = 0
     llm_calls: int = 0
+    llm_input_tokens: int = 0
+    llm_output_tokens: int = 0
     network_calls: int = 0
     cache_hits: int = 0
     duration_s: float = 0.0
@@ -120,7 +122,8 @@ class EnrichmentReport(BaseModel):
             f"Не знайдено: {self.not_found}",
             f"Помилок: {self.errors}",
             f"Пропущено (вже заповнені або порожній вхід): {self.skipped}",
-            f"Викликів моделі: {self.llm_calls}",
+            f"Викликів моделі: {self.llm_calls}"
+            f" (токенів: вхід {self.llm_input_tokens}, вихід {self.llm_output_tokens})",
             f"Мережевих запитів: {self.network_calls} (з кешу: {self.cache_hits})",
             f"Час: {self.duration_s:.1f} с",
             f"Оцінена вартість: {self.cost_usd:.4f} USD",
