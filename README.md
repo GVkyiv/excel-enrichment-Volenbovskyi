@@ -291,15 +291,32 @@ venv\Scripts\python.exe scripts\validate_against_reference.py ^
 | Ноутбук-демонстрація і упаковка на здачу | попереду |
 | Ціни моделі в `.env` для підрахунку вартості | не заповнені |
 
+## Що здавати
+
+```bash
+venv\Scripts\python.exe main.py capitals
+venv\Scripts\python.exe main.py mountains
+venv\Scripts\python.exe scripts\build_notebook.py
+venv\Scripts\python.exe scripts\make_submission.py
+```
+
+На платформу йдуть: `notebooks/ВоленбовськийГВ_демонстрація.ipynb` зі
+збереженими виводами, два файли з `Data/Submission` і архів репозиторію.
+Ноутбук збирається і виконується скриптом, а не руками: так виводи в ньому
+завжди відповідають поточному коду. Ключів у репозиторії немає, `.env`
+не відстежується.
+
 ## Структура
 
 ```
-Data/Input       вхідні файли
-Data/Reference   еталони викладача
-Data/Output      результати роботи системи
-Data/plans       збережені плани збагачення
-docs/TZ.md       технічне завдання
-src/             система
-scripts/         звірка з еталоном
-main.py          командний інтерфейс
+Data/Input        вхідні файли, ломалка і набір для стрес-тесту
+Data/Reference    еталони викладача
+Data/Output       результати роботи системи
+Data/Submission   ті самі результати, підписані прізвищем
+Data/plans        плани, які склала модель, по одному на завдання
+docs/TZ.md        технічне завдання
+notebooks/        демонстрація зі збереженими виводами
+src/              система
+scripts/          звірка з еталоном, генератори наборів, замір E1, збірка
+main.py           командний інтерфейс
 ```

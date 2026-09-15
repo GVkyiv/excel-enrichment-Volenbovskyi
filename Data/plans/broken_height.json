@@ -1,0 +1,19 @@
+{
+  "target_column": "height",
+  "value_type": "number",
+  "unit": "meters",
+  "tool": "wikidata_lookup",
+  "input_columns": {
+    "entity": "Mountain"
+  },
+  "wikidata_property": "P2044",
+  "wikidata_type": "Q8502",
+  "search_query_template": "height of {Mountain} in {Country} meters",
+  "bounds": {
+    "min_value": 100.0,
+    "max_value": 9000.0
+  },
+  "ambiguous_interpretations": [],
+  "extra_columns": {},
+  "reasoning": "Висота гори є однозначною числовою характеристикою, яку можна отримати зі структурованої бази Wikidata через властивість P2044. Тип Q8502 допоможе відрізнити гори від інших сутностей із подібними назвами; для неповних або відсутніх записів передбачено резервний пошук."
+}

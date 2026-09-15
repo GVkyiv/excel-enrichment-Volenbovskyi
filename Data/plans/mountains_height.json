@@ -8,12 +8,12 @@
   },
   "wikidata_property": "P2044",
   "wikidata_type": "Q8502",
-  "search_query_template": "height of {Mountain} in meters",
+  "search_query_template": "height of {Mountain} in {Country} meters",
   "bounds": {
     "min_value": 100.0,
     "max_value": 9000.0
   },
   "ambiguous_interpretations": [],
   "extra_columns": {},
-  "reasoning": "Висота гори є однозначною структурованою властивістю, тому найнадійніше отримати її з Wikidata за властивістю P2044. Тип Q8502 допомагає відрізнити гору від гірського масиву чи іншої сутності з подібною назвою."
+  "reasoning": "Висоту гори можна отримати зі структурованої бази Wikidata через властивість P2044 «висота над рівнем моря». Тип Q8502 допомагає однозначно трактувати назви як гори, а діапазон 100–9000 метрів відсікає некоректні значення."
 }
