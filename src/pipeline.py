@@ -65,7 +65,16 @@ def process_excel(
     validate_plan(plan, table.headers)
 
     context = ToolContext(cache=cache, plan=plan, llm=llm, road_mode=road_mode)
-    _prefetch(table, plan, context)
+    try:
+        _prefetch(table, plan, context)
+    except Exception as error:
+        # Пакетний запит це оптимізація, а не обов'язковий крок: якщо
+        # джерело недоступне, рядки підуть звичайним шляхом і кожен
+        # поверне власну зрозумілу причину, а не аварію всього прогону.
+        logger.warning(
+            "Пакетне попереднє завантаження не вдалося (%s), рядки обробляються поодинці",
+            error,
+        )
 
     report = EnrichmentReport(
         file_path=str(file_path), task_description=task_description, plan=plan
@@ -99,9 +108,17 @@ def process_excel(
 
     report.rows.sort(key=lambda item: item.row_index)
     output = Path(output_path) if output_path else _default_output(file_path)
-    write_enriched(
-        file_path, output, report, plan.target_column, list(plan.extra_columns)
+    # Додаткову колонку створюємо лише тоді, коли в ній справді є значення:
+    # порожня колонка в результаті це сміття, а не збереження структури.
+    used_extras = sorted(
+        {
+            name
+            for row in report.rows
+            for name, value in row.extra_values.items()
+            if value is not None
+        }
     )
+    write_enriched(file_path, output, report, plan.target_column, used_extras)
 
     _finalize(report, output, cache, llm, started)
     cache.close()

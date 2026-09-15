@@ -13,9 +13,10 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from ..cache import Cache
+from ..http_client import NetworkError
 from ..models import EnrichmentPlan
 from . import geo, wikidata, websearch
-from .llm import LLMClient, ask_knowledge, extract_from_snippets
+from .llm import LLMClient, MissingApiKeyError, ask_knowledge, extract_from_snippets
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ class ToolOutcome:
     confidence_level: int = 0
     message: str = ""
     llm_calls: int = 0
+    error_kind: str = ""  # network, api_key або порожньо
 
 
 def render_template(template: str, row: dict[str, Any]) -> str:
@@ -189,7 +191,10 @@ def web_search_extract(row: dict[str, Any], context: ToolContext) -> ToolOutcome
     if context.llm is None:
         return ToolOutcome(
             query=query,
-            message="Пошук знайшов текст, але без ключа моделі нікому витягти значення",
+            message=(
+                "Шлях через пошук вимагає ключа моделі (OPENAI_API_KEY), "
+                "бо значення з тексту видачі витягає саме вона"
+            ),
         )
 
     snippets = websearch.search(query, context.cache)
@@ -262,6 +267,12 @@ def run_tool(name: str, row: dict[str, Any], context: ToolContext) -> ToolOutcom
         return ToolOutcome(message=f"Невідомий інструмент: {name}")
     try:
         return tool(row, context)
-    except Exception as error:  # мережа, ключі, несподіваний формат відповіді
+    except NetworkError as error:
+        logger.warning("Джерело недоступне (%s): %s", name, error)
+        return ToolOutcome(message=str(error), error_kind="network")
+    except (MissingApiKeyError, websearch.SearchUnavailableError) as error:
+        logger.warning("Немає доступу до джерела (%s): %s", name, error)
+        return ToolOutcome(message=str(error), error_kind="api_key")
+    except Exception as error:  # несподіваний формат відповіді, помилка розбору
         logger.warning("Інструмент %s не спрацював: %s", name, error)
         return ToolOutcome(message=f"{type(error).__name__}: {error}")

@@ -81,8 +81,12 @@ class HttpClient:
                 )
                 if attempt < HTTP_RETRIES - 1:
                     time.sleep(HTTP_BACKOFF[attempt])
+        reason = str(last_error).split("(Caused by", 1)[0].strip()
+        if len(reason) > 120:
+            reason = reason[:120] + "..."
         raise NetworkError(
-            f"Джерело {url} не відповіло після {HTTP_RETRIES} спроб: {last_error}"
+            f"Джерело {url.split('?')[0]} не відповіло після {HTTP_RETRIES} спроб "
+            f"({type(last_error).__name__}: {reason})"
         )
 
 

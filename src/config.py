@@ -30,7 +30,11 @@ HTTP_TIMEOUT = 10  # секунд на один запит
 HTTP_RETRIES = 3
 HTTP_BACKOFF = (1, 2, 4)  # паузи між спробами, секунд
 
-WIKIDATA_SPARQL_URL = "https://query.wikidata.org/sparql"
+# Адреси джерел можна підмінити змінною оточення. Це потрібно для
+# демонстрації обробки помилок: недоступне джерело імітується без правок коду.
+WIKIDATA_SPARQL_URL = os.getenv(
+    "WIKIDATA_SPARQL_URL", "https://query.wikidata.org/sparql"
+)
 WIKIDATA_BATCH_SIZE = 50  # сутностей в одному SPARQL-запиті
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"

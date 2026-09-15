@@ -37,6 +37,8 @@ class RowState(TypedDict, total=False):
     validated_value: Any
     status: str
     message: str
+    messages: list[str]
+    statuses: list[str]
     result: dict[str, Any]
 
 
@@ -62,23 +64,55 @@ def build_graph(context: ToolContext):
         }
 
     def validator(state: RowState) -> RowState:
-        """Перевіряє тип, одиниці і межі, потім за потреби шукає підтвердження."""
+        """Перевіряє тип, одиниці і межі, потім за потреби шукає підтвердження.
+
+        Повідомлення кожної спроби накопичуються: якщо перший інструмент
+        дав значення поза межами, а другий нічого не знайшов, у лог мають
+        потрапити обидві причини, а не лише остання.
+        """
         outcome = state["outcome"]
+        history = list(state.get("messages", []))
+
+        statuses = list(state.get("statuses", []))
+
         if not outcome.get("found"):
-            return {"status": "not_found", "message": outcome.get("message", "")}
+            history.append(outcome.get("message", ""))
+            failure = {
+                "network": "network_error",
+                "api_key": "api_key_error",
+            }.get(outcome.get("error_kind", ""), "not_found")
+            return {
+                "status": failure,
+                "message": "",
+                "messages": history,
+                "statuses": [*statuses, failure],
+            }
 
         try:
             value = validate(outcome["value"], context.plan, outcome.get("unit"))
         except ValidationError as error:
-            return {"status": "out_of_bounds", "message": str(error)}
+            history.append(f"{outcome.get('message', '')}: {error}")
+            return {
+                "status": "out_of_bounds",
+                "message": "",
+                "messages": history,
+                "statuses": [*statuses, "out_of_bounds"],
+            }
 
         status, message = _cross_check(value, outcome, state["row"], context)
-        return {"validated_value": value, "status": status, "message": message}
+        history.append(message)
+        return {
+            "validated_value": value,
+            "status": status,
+            "message": message,
+            "messages": history,
+            "statuses": [*statuses, status],
+        }
 
     def writer(state: RowState) -> RowState:
         """Складає підсумок по рядку для аркуша enrichment_log."""
         outcome = state.get("outcome", {})
-        status = state.get("status", "not_found")
+        status = _final_status(state)
         value = state.get("validated_value") if status in ("ok", "ambiguous") else None
         result = RowResult(
             row_index=state["row_index"],
@@ -90,7 +124,7 @@ def build_graph(context: ToolContext):
             query=outcome.get("query", ""),
             confidence_level=outcome.get("confidence_level", 0),
             status=status,
-            message=state.get("message", outcome.get("message", "")),
+            message=" | ".join(filter(None, state.get("messages", []))),
             llm_calls=outcome.get("llm_calls", 0),
             extra_values=outcome.get("extra_values", {}) if value is not None else {},
         )
@@ -117,6 +151,22 @@ def build_graph(context: ToolContext):
     )
     builder.add_edge("writer", END)
     return builder.compile(checkpointer=MemorySaver())
+
+
+def _final_status(state: RowState) -> str:
+    """Підсумковий статус рядка.
+
+    Якщо значення так і не знайдено, показуємо найінформативнішу причину:
+    «поза межами» пояснює більше, ніж «не знайдено» від наступної спроби.
+    """
+    status = state.get("status", "not_found")
+    if status in ("ok", "ambiguous"):
+        return status
+    history = state.get("statuses", [])
+    for informative in ("network_error", "api_key_error", "out_of_bounds", "unconfirmed"):
+        if informative in history:
+            return informative
+    return status
 
 
 def _next_tool(primary: str, tried: list[str]) -> str | None:
