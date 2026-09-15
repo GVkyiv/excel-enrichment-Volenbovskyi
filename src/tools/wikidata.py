@@ -187,13 +187,34 @@ def _pick_value(values: list[str], others: list[str]) -> tuple[str, str]:
     """
     if len(values) == 1:
         return values[0], ""
-    for value in values:
-        if any(not _differs(value, other) for other in others):
-            return value, (
+    if others:
+        # Беремо не перше «достатньо близьке», а найкраще збіжне: 7756 і
+        # 8091 відрізняються лише на 4 відсотки, тому правило «в межах
+        # порогу» тут нічого не вирішує, вирішує саме мінімум розбіжності.
+        scored = [(_distance_to_nearest(value, others), value) for value in values]
+        best_distance, best_value = min(scored, key=lambda pair: pair[0])
+        if best_distance is not None:
+            return best_value, (
                 f"у джерела кілька значень {values}, узято підтверджене іншим "
                 f"елементом Wikidata"
             )
     return values[0], f"у джерела кілька значень {values}, узято перше"
+
+
+def _distance_to_nearest(value: str, others: list[str]) -> float:
+    """Найменша відносна розбіжність значення з чужими значеннями."""
+    best = float("inf")
+    for other in others:
+        try:
+            left, right = float(value), float(other)
+        except (TypeError, ValueError):
+            best = min(best, 0.0 if str(value).strip() == str(other).strip() else 1.0)
+            continue
+        if right == 0:
+            best = min(best, 0.0 if left == 0 else 1.0)
+            continue
+        best = min(best, abs(left - right) / abs(right))
+    return best
 
 
 def _differs(first: str, second: str, threshold: float = 0.10) -> bool:

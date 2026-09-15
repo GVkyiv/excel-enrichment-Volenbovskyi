@@ -7,3 +7,9 @@ openai>=1.60
 langgraph>=0.2
 langchain-core>=0.3
 tavily-python>=0.5
+
+# Для розробки: тести і збірка ноутбука.
+pytest>=8.0
+nbformat>=5.10
+nbclient>=0.10
+ipykernel>=6.29
