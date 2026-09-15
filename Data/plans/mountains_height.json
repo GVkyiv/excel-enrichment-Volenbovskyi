@@ -1,0 +1,18 @@
+{
+  "target_column": "height",
+  "value_type": "number",
+  "unit": "m",
+  "tool": "wikidata_lookup",
+  "input_columns": {
+    "entity": "Mountain"
+  },
+  "wikidata_property": "P2044",
+  "search_query_template": "height of {Mountain} in {Country} in meters above sea level",
+  "bounds": {
+    "min_value": 100.0,
+    "max_value": 9000.0
+  },
+  "ambiguous_interpretations": [],
+  "extra_columns": {},
+  "reasoning": "Висота над рівнем моря однозначна і є у Wikidata властивістю P2044, тому структуроване джерело дешевше і точніше за пошук."
+}

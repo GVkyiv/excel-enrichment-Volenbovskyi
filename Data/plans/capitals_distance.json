@@ -1,0 +1,24 @@
+{
+  "target_column": "distance",
+  "value_type": "number",
+  "unit": "km",
+  "tool": "geo_distance",
+  "input_columns": {
+    "from": "Capital_From",
+    "to": "Capital_To"
+  },
+  "wikidata_property": null,
+  "search_query_template": "straight line distance between {Capital_From} and {Capital_To} in km",
+  "bounds": {
+    "min_value": 1.0,
+    "max_value": 20038.0
+  },
+  "ambiguous_interpretations": [
+    "straight",
+    "road"
+  ],
+  "extra_columns": {
+    "distance_road_km": "road"
+  },
+  "reasoning": "У завданні сказано «пряма відстань», тому основна колонка це велике коло за координатами Wikidata. Відстань дорогами додана окремою колонкою, бо поняття відстані між містами має два усталених трактування."
+}
