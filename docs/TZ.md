@@ -282,7 +282,7 @@ AI Generative Excel Final Project/
 | 5 | Граф LangGraph і паралелізм | той самий результат, час менший, лог повний |
 | 6 | Демо-завдання 3 і 4 плюс `broken.xlsx` | код не змінювався, усі шість сценаріїв помилок відпрацювали |
 | 7 | Стрес-тест 1000 рядків | таблиця замірів, холодний і теплий кеш |
-| 8 | README, упаковка, здача | приватний репозиторій `excel-enrichment-Volenbovskyi`, zip без ключів |
+| 8 | README, упаковка, здача | публічний репозиторій `excel-enrichment-Volenbovskyi`, zip без ключів |
 
 Після здачі: копія в навчальний репозиторій
 `Project Neoversity/tier2/generative-agentic-ai/final-project/` з README у
